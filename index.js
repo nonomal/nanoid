@@ -1,8 +1,8 @@
-import crypto from 'node:crypto'
+import { webcrypto as crypto } from 'node:crypto'
 
-import { urlAlphabet } from './url-alphabet/index.js'
+import { urlAlphabet as scopedUrlAlphabet } from './url-alphabet/index.js'
 
-export { urlAlphabet }
+export { urlAlphabet } from './url-alphabet/index.js'
 
 // It is best to make fewer, larger requests to the crypto module to
 // avoid system call overhead. So, random numbers are generated in a
@@ -25,8 +25,8 @@ function fillPool(bytes) {
 }
 
 export function random(bytes) {
-  // `-=` convert `bytes` to number to prevent `valueOf` abusing
-  fillPool((bytes -= 0))
+  // `|=` convert `bytes` to number to prevent `valueOf` abusing and pool pollution
+  fillPool((bytes |= 0))
   return pool.subarray(poolOffset - bytes, poolOffset)
 }
 
@@ -59,7 +59,7 @@ export function customRandom(alphabet, defaultSize, getRandom) {
       while (i--) {
         // Adding `|| ''` refuses a random byte that exceeds the alphabet size.
         id += alphabet[bytes[i] & mask] || ''
-        if (id.length === size) return id
+        if (id.length >= size) return id
       }
     }
   }
@@ -70,8 +70,8 @@ export function customAlphabet(alphabet, size = 21) {
 }
 
 export function nanoid(size = 21) {
-  // `-=` convert `size` to number to prevent `valueOf` abusing
-  fillPool((size -= 0))
+  // `|=` convert `size` to number to prevent `valueOf` abusing and pool pollution
+  fillPool((size |= 0))
   let id = ''
   // We are reading directly from the random pool to avoid creating new array
   for (let i = poolOffset - size; i < poolOffset; i++) {
@@ -80,7 +80,7 @@ export function nanoid(size = 21) {
     // range to the 0-63 value range. Therefore, adding hacks, such
     // as empty string fallback or magic numbers, is unnecessary because
     // the bitmask trims bytes down to the alphabet size.
-    id += urlAlphabet[pool[i] & 63]
+    id += scopedUrlAlphabet[pool[i] & 63]
   }
   return id
 }

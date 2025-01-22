@@ -11,7 +11,7 @@ ID можно применять в URL.
 > «Поразительный уровень бессмысленного перфекционизма,
 > который просто невозможно не уважать»
 
-- **Лёгкий.** 130 байт (после минификации и gzip). Без зависимостей.
+- **Лёгкий.** 118 байт (после минификации и Brotli). Без зависимостей.
   [Size Limit] следит за размером.
 - **Безопасный.** Использует аппаратный генератор случайных чисел.
   Можно использовать в кластерах машин.
@@ -33,17 +33,21 @@ model.id = nanoid() //=> "V1StGXR8_Z5jdHi6B-myT"
 
 ---
 
-<img src="https://cdn.evilmartians.com/badges/logo-no-label.svg" alt="" width="22" height="16" />  Сделано в <b><a href="https://evilmartians.com/devtools?utm_source=nanoid&utm_campaign=devtools-button&utm_medium=github">Злых марсианах</a></b>, продуктовом консалитнге для <b>инструментов разработки</b>.
+<img src="https://cdn.evilmartians.com/badges/logo-no-label.svg" alt="" width="22" height="16" />  Сделано в <b><a href="https://evilmartians.com/devtools?utm_source=nanoid&utm_campaign=devtools-button&utm_medium=github">Злых марсианах</a></b>, продуктовом консалтинге для <b>инструментов разработки</b>.
 
 ---
 
 
 ## Оглавление
 
+- [Оглавление](#оглавление)
 - [Сравнение с UUID](#сравнение-с-uuid)
 - [Сравнение производительности](#сравнение-производительности)
 - [Безопасность](#безопасность)
 - [Подключение](#подключение)
+  - [ESM](#esm)
+  - [CommonJS](#commonjs)
+  - [CDN](#cdn)
 - [API](#api)
   - [Блокирующий](#блокирующий)
   - [Небезопасный](#небезопасный)
@@ -81,24 +85,25 @@ Nano ID похож на UUID v4 (случайный).
 
 ```rust
 $ node ./test/benchmark.js
-crypto.randomUUID         21,119,429 ops/sec
-uuid v4                   20,368,447 ops/sec
-@napi-rs/uuid             11,493,890 ops/sec
-uid/secure                 8,409,962 ops/sec
-@lukeed/uuid               6,871,405 ops/sec
-nanoid                     5,652,148 ops/sec
-customAlphabet             3,565,656 ops/sec
-secure-random-string         394,201 ops/sec
-uid-safe.sync                393,176 ops/sec
-shortid                       49,916 ops/sec
+crypto.randomUUID          7,619,041 ops/sec
+uuid v4                    7,436,626 ops/sec
+@napi-rs/uuid              4,730,614 ops/sec
+uid/secure                 4,729,185 ops/sec
+@lukeed/uuid               4,015,673 ops/sec
+nanoid                     3,693,964 ops/sec
+customAlphabet             2,799,255 ops/sec
+nanoid for browser           380,915 ops/sec
+secure-random-string         362,316 ops/sec
+uid-safe.sync                354,234 ops/sec
+shortid                       38,808 ops/sec
 
 Non-secure:
-uid                       58,860,241 ops/sec
-nanoid/non-secure          2,744,615 ops/sec
-rndm                       2,718,063 ops/sec
+uid                       11,872,105 ops/sec
+nanoid/non-secure          2,226,483 ops/sec
+rndm                       2,308,044 ops/sec
 ```
 
-Среда сравнения: ThinkPad X1 Carbon Gen 9, Fedora 36, Node.js 18.9.
+Среда сравнения: Framework 13 7840U, Fedora 39, Node.js 21.6.
 
 
 ## Безопасность
@@ -133,16 +138,38 @@ _См. также хорошую статью о теориях генерато
 
 ## Подключение
 
-```bash
-npm install --save nanoid
-```
+### ESM
 
-Nano ID 5 работает только с ESM-проектами, в тестах или скриптах для Node.js.
-Для CommonJS вам нужен Nano ID 3.x (мы ещё всё ещё поддерживаем):
+Nano ID 5 работает с ESM-проектами (`import`) в тестах или скриптах для Node.js.
 
 ```bash
-npm install --save nanoid@3
+npm install nanoid
 ```
+
+### CommonJS
+
+На проектах с CommonJS вы можете использовать:
+
+- `require()` будет работать в последней версия Node.js 22.12 (из коробки)
+  или Node.js 20 (с флагом `--experimental-require-module`).
+
+- В более старых версиях Node.js можно использовать динамический импорт:
+
+  ```js
+  let nanoid
+  module.exports.createID = async () => {
+    if (!nanoid) ({ nanoid } = await import('nanoid'))
+    return nanoid() // => "V1StGXR8_Z5jdHi6B-myT"
+  }
+  ```
+
+- Или можно просто взять Nano ID 3.x (мы его всё ещё поддерживаем):
+
+  ```bash
+  npm install nanoid@3
+  ```
+
+### CDN
 
 Для быстрого прототипирования вы можете подключить Nano ID с CDN без установки.
 Не используйте этот способ на реальном сайте, так как он сильно бьёт
@@ -382,11 +409,13 @@ Nano ID был портирован на множество языков. Это
 - [Dart и Flutter](https://github.com/pd4d10/nanoid-dart)
 - [Deno](https://github.com/ianfabs/nanoid)
 - [Elixir](https://github.com/railsmechanic/nanoid)
+- [Gleam](https://github.com/0xca551e/glanoid)
 - [Go](https://github.com/jaevor/go-nanoid)
 - [Haskell](https://github.com/MichelBoucey/NanoID)
 - [Haxe](https://github.com/flashultra/uuid)
 - [Janet](https://sr.ht/~statianzo/janet-nanoid/)
-- [Java](https://github.com/aventrix/jnanoid)
+- [Java](https://github.com/wosherco/jnanoid-enhanced)
+- [Kotlin](https://github.com/viascom/nanoid-kotlin)
 - [MySQL/MariaDB](https://github.com/viascom/nanoid-mysql-mariadb)
 - [Nim](https://github.com/icyphox/nanoid.nim)
 - [Perl](https://github.com/tkzwtks/Nanoid-perl)

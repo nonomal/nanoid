@@ -10,7 +10,7 @@ A tiny, secure, URL-friendly, unique string ID generator for JavaScript.
 > “An amazing level of senseless perfectionism,
 > which is simply impossible not to respect.”
 
-* **Small.** 130 bytes (minified and gzipped). No dependencies.
+* **Small.** 118 bytes (minified and brotlied). No dependencies.
   [Size Limit] controls the size.
 * **Safe.** It uses hardware random generator. Can be used in clusters.
 * **Short IDs.** It uses a larger alphabet than UUID (`A-Za-z0-9_-`).
@@ -25,7 +25,7 @@ model.id = nanoid() //=> "V1StGXR8_Z5jdHi6B-myT"
 
 ---
 
-<img src="https://cdn.evilmartians.com/badges/logo-no-label.svg" alt="" width="22" height="16" />  Made in <b><a href="https://evilmartians.com/devtools?utm_source=nanoid&utm_campaign=devtools-button&utm_medium=github">Evil Martians</a></b>, product consulting for <b>developer tools</b>.
+<img src="https://cdn.evilmartians.com/badges/logo-no-label.svg" alt="" width="22" height="16" />  Made at <b><a href="https://evilmartians.com/devtools?utm_source=nanoid&utm_campaign=devtools-button&utm_medium=github">Evil Martians</a></b>, product consulting for <b>developer tools</b>.
 
 ---
 
@@ -36,23 +36,27 @@ model.id = nanoid() //=> "V1StGXR8_Z5jdHi6B-myT"
 
 ## Table of Contents
 
-* [Comparison with UUID](#comparison-with-uuid)
-* [Benchmark](#benchmark)
-* [Security](#security)
-* [Install](#install)
-* [API](#api)
-  * [Blocking](#blocking)
-  * [Non-Secure](#non-secure)
-  * [Custom Alphabet or Size](#custom-alphabet-or-size)
-  * [Custom Random Bytes Generator](#custom-random-bytes-generator)
-* [Usage](#usage)
-  * [React](#react)
-  * [React Native](#react-native)
-  * [PouchDB and CouchDB](#pouchdb-and-couchdb)
-  * [Web Workers](#web-workers)
-  * [CLI](#cli)
-  * [Other Programming Languages](#other-programming-languages)
-* [Tools](#tools)
+- [Table of Contents](#table-of-contents)
+- [Comparison with UUID](#comparison-with-uuid)
+- [Benchmark](#benchmark)
+- [Security](#security)
+- [Install](#install)
+  - [ESM](#esm)
+  - [CommonJS](#commonjs)
+  - [CDN](#cdn)
+- [API](#api)
+  - [Blocking](#blocking)
+  - [Non-Secure](#non-secure)
+  - [Custom Alphabet or Size](#custom-alphabet-or-size)
+  - [Custom Random Bytes Generator](#custom-random-bytes-generator)
+- [Usage](#usage)
+  - [React](#react)
+  - [React Native](#react-native)
+  - [PouchDB and CouchDB](#pouchdb-and-couchdb)
+  - [Web Workers](#web-workers)
+  - [CLI](#cli)
+  - [Other Programming Languages](#other-programming-languages)
+- [Tools](#tools)
 
 
 ## Comparison with UUID
@@ -76,24 +80,25 @@ There are two main differences between Nano ID and UUID v4:
 
 ```rust
 $ node ./test/benchmark.js
-crypto.randomUUID         21,119,429 ops/sec
-uuid v4                   20,368,447 ops/sec
-@napi-rs/uuid             11,493,890 ops/sec
-uid/secure                 8,409,962 ops/sec
-@lukeed/uuid               6,871,405 ops/sec
-nanoid                     5,652,148 ops/sec
-customAlphabet             3,565,656 ops/sec
-secure-random-string         394,201 ops/sec
-uid-safe.sync                393,176 ops/sec
-shortid                       49,916 ops/sec
+crypto.randomUUID          7,619,041 ops/sec
+uuid v4                    7,436,626 ops/sec
+@napi-rs/uuid              4,730,614 ops/sec
+uid/secure                 4,729,185 ops/sec
+@lukeed/uuid               4,015,673 ops/sec
+nanoid                     3,693,964 ops/sec
+customAlphabet             2,799,255 ops/sec
+nanoid for browser           380,915 ops/sec
+secure-random-string         362,316 ops/sec
+uid-safe.sync                354,234 ops/sec
+shortid                       38,808 ops/sec
 
 Non-secure:
-uid                       58,860,241 ops/sec
-nanoid/non-secure          2,744,615 ops/sec
-rndm                       2,718,063 ops/sec
+uid                       11,872,105 ops/sec
+nanoid/non-secure          2,226,483 ops/sec
+rndm                       2,308,044 ops/sec
 ```
 
-Test configuration: ThinkPad X1 Carbon Gen 9, Fedora 36, Node.js 18.9.
+Test configuration: Framework 13 7840U, Fedora 39, Node.js 21.6.
 
 
 ## Security
@@ -126,16 +131,39 @@ Test configuration: ThinkPad X1 Carbon Gen 9, Fedora 36, Node.js 18.9.
 
 ## Install
 
-```bash
-npm install --save nanoid
-```
+### ESM
 
-Nano ID 5 works only with ESM projects, in tests or Node.js scripts.
-For CommonJS you need Nano ID 3.x (we still support it):
+Nano ID 5 works with ESM projects (with `import`) in tests or Node.js scripts.
 
 ```bash
-npm install --save nanoid@3
+npm install nanoid
 ```
+
+### CommonJS
+
+Nano ID can be used with CommonJS in one of the following ways:
+
+- You can use `require()` to import Nano ID. You need to use latest Node.js
+  22.12 (works out-of-the-box) or Node.js 20
+  (with `--experimental-require-module`).
+
+- For Node.js 18 you can dynamically import Nano ID as follows:
+
+  ```js
+  let nanoid
+  module.exports.createID = async () => {
+    if (!nanoid) ({ nanoid } = await import('nanoid'))
+    return nanoid() // => "V1StGXR8_Z5jdHi6B-myT"
+  }
+  ```
+
+- You can use Nano ID 3.x (we still support it):
+
+  ```bash
+  npm install nanoid@3
+  ```
+
+### CDN
 
 For quick hacks, you can load Nano ID from CDN. Though, it is not recommended
 to be used in production because of the lower loading performance.
@@ -143,7 +171,6 @@ to be used in production because of the lower loading performance.
 ```js
 import { nanoid } from 'https://cdn.jsdelivr.net/npm/nanoid/nanoid.js'
 ```
-
 
 ## API
 
@@ -389,11 +416,13 @@ $ npx nanoid --alphabet abc --size 15
 bccbcabaabaccab
 ```
 
+
 ### Other Programming Languages
 
 Nano ID was ported to many languages. You can use these ports to have
 the same ID generator on the client and server side.
 
+* [C](https://github.com/lukateras/nanoid.h)
 * [C#](https://github.com/codeyu/nanoid-net)
 * [C++](https://github.com/mcmikecreations/nanoid_cpp)
 * [Clojure and ClojureScript](https://github.com/zelark/nano-id)
@@ -402,18 +431,21 @@ the same ID generator on the client and server side.
 * [Dart & Flutter](https://github.com/pd4d10/nanoid-dart)
 * [Deno](https://github.com/ianfabs/nanoid)
 * [Elixir](https://github.com/railsmechanic/nanoid)
+* [Gleam](https://github.com/0xca551e/glanoid)
 * [Go](https://github.com/matoous/go-nanoid)
 * [Haskell](https://github.com/MichelBoucey/NanoID)
 * [Haxe](https://github.com/flashultra/uuid)
 * [Janet](https://sr.ht/~statianzo/janet-nanoid/)
-* [Java](https://github.com/aventrix/jnanoid)
+* [Java](https://github.com/wosherco/jnanoid-enhanced)
+* [Kotlin](https://github.com/viascom/nanoid-kotlin)
 * [MySQL/MariaDB](https://github.com/viascom/nanoid-mysql-mariadb)
 * [Nim](https://github.com/icyphox/nanoid.nim)
 * [OCaml](https://github.com/routineco/ocaml-nanoid)
 * [Perl](https://github.com/tkzwtks/Nanoid-perl)
 * [PHP](https://github.com/hidehalo/nanoid-php)
-* [Python](https://github.com/puyuan/py-nanoid)
+* Python [native](https://github.com/puyuan/py-nanoid) implementation
   with [dictionaries](https://pypi.org/project/nanoid-dictionary)
+  and [fast](https://github.com/oliverlambson/fastnanoid) implementation (written in Rust)
 * Postgres [Extension](https://github.com/spa5k/uids-postgres)
   and [Native Function](https://github.com/viascom/nanoid-postgres)
 * [R](https://github.com/hrbrmstr/nanoid) (with dictionaries)
